@@ -20,7 +20,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f1xx_hal_usart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -50,8 +49,12 @@ TIM_HandleTypeDef htim3;
 
 USART_HandleTypeDef husart1;
 
-
 /* USER CODE BEGIN PV */
+
+
+
+
+
 
 /* USER CODE END PV */
 
@@ -64,6 +67,9 @@ static void MX_TIM3_Init(void);
 static void MX_USART1_Init(void);
 /* USER CODE BEGIN PFP */
 
+
+
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -75,205 +81,56 @@ static void MX_USART1_Init(void);
   * @brief  The application entry point.
   * @retval int
   */
-#include "main.h"
-#include <stdio.h>
-#include <string.h>
-
-// Veri depolama alani
-char data[30];
-uint8_t data_index = 0;
-
-// Fonksiyon prototipleri
-void process_command(char *data);
-void rgb_led_control(char *data);
-void normal_led_control(char *data);
-void park_servo_control(char *data);
-void kapi_control(char *data);
-void buzzer_control(char *data);
-
-
 int main(void)
 {
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
   SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_USART1_Init();
+  /* USER CODE BEGIN 2 */
 
-  // USART alim kesmesini etkinlestirme
-HAL_USART_Receive_IT(&husart1, (uint8_t *)data, 1);
+  /* USER CODE END 2 */
 
-
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
   while (1)
-{
-    // Ana islem
-    // Burada gelen verilere göre islemler yapilacak
-
-    // Örnek veri alma islemi
-    // Bu kisimda gerçek zamanli olarak veri alinmasi gerekiyorsa, uygun bir sekilde bu kisim düzenlenmelidir.
-    // Su an sadece test amaçli bir veri atanmistir.
-    char received_data[] = "R,255,G,127,B,63\n"; // Örnek bir veri alindi
-
-    // Veri alindiginda bu veriyi isleyerek uygun islemleri gerçeklestiriyoruz
-    process_command(received_data);
-
-    // Islem yapildiktan sonra, diger islemler devam eder...
-}
-
-}
-
-// USART alim kesme isleme fonksiyonu
-void HAL_UART_RxCpltCallback(USART_HandleTypeDef *huart)
-{
-  if (huart->Instance == USART1)
   {
-    // Gelen veriyi depolama
-    if (data_index < 29) // Veriyi son karakter olan '\0' için de yer ayirmak için 30 degil 29 olarak kontrol ediyoruz
-    {
-      if (data[data_index] == '\n' || data[data_index] == '\r')
-      {
-        data[data_index] = '\0'; // Stringi sonlandir
-        // Gelen veriyi isleme fonksiyonuna gönderme
-        process_command(data);
-        data_index = 0; // Veri alimi için indeksi sifirla
-      }
-      else
-      {
-        data_index++;
-        HAL_USART_Receive_IT(&husart1, (uint8_t *)&data[data_index], 1); // Bir sonraki karakteri bekle
-      }
-    }
-    else
-    {
-      data_index = 0; // Hata durumunda indeksi sifirla
-      HAL_USART_Receive_IT(&husart1, (uint8_t *)&data[data_index], 1); // Bir sonraki karakteri bekle
-    }
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+		
+		
+		
+		
+		
+		
+		
+		
   }
+  /* USER CODE END 3 */
 }
-
-
-// Gelen komutlari isleme fonksiyonu
-void process_command(char *data)
-{
-  if (strlen(data) > 0)
-  {
-    if (data[0] == 'R')
-    {
-      rgb_led_control(data);
-    }
-    else if (data[0] == 'L')
-    {
-      normal_led_control(data);
-    }
-    else if (data[0] == 'P')
-    {
-      park_servo_control(data);
-    }
-    else if (data[0] == 'K')
-    {
-      kapi_control(data);
-    }
-    else if (data[0] == 'B')
-    {
-      buzzer_control(data);
-    }
-  }
-}
-
-// RGB LED kontrol fonksiyonu
-void rgb_led_control(char *data)
-{
-  if (strlen(data) >= 6 && data[0] == 'R')
-  {
-    int r_value, g_value, b_value;
-    sscanf(data, "R,%d,G,%d,B,%d", &r_value, &g_value, &b_value);
-    // RGB LED'i istenen renge ayarla
-    printf("RGB LED Rengi: R=%d, G=%d, B=%d\n", r_value, g_value, b_value);
-
-    // RGB LED kontrol kodlari eklenecek
-    // Örnek: GPIO pinlerine yazma islemi kullanarak RGB LED'in rengini ayarlamak
-    // Bu sadece bir örnek, donaniminiza ve kullanilan kütüphanelere bagli olarak degisiklik gösterebilir
-    // Örnek olarak:
-    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, r_value > 0 ? GPIO_PIN_SET : GPIO_PIN_RESET); // Kirmizi
-    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, g_value > 0 ? GPIO_PIN_SET : GPIO_PIN_RESET); // Yesil
-    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, b_value > 0 ? GPIO_PIN_SET : GPIO_PIN_RESET); // Mavi
-  }
-}
-
-// Normal LED kontrol fonksiyonu
-void normal_led_control(char *data)
-{
-  if (data[0] == 'L')
-  {
-    if (strcmp(data, "L,ON") == 0)
-    {
-      // Normal LED'i aç
-      printf("Normal LED Acildi\n");
-      // Normal LED açma kodlari eklenecek
-    }
-    else if (strcmp(data, "L,OFF") == 0)
-    {
-      // Normal LED'i kapat
-      printf("Normal LED Kapatildi\n");
-      // Normal LED kapatma kodlari eklenecek
-    }
-  }
-}
-
-// Park servo kontrol fonksiyonu
-void park_servo_control(char *data)
-{
-  if (data[0] == 'P')
-  {
-    if (strcmp(data, "P,LEFT") == 0)
-    {
-      // Park servo'yu sola döndürme kodlari
-      printf("Park Servo Sola Donduruldu\n");
-      // Park servo sola döndürme kodlari eklenecek
-    }
-    else if (strcmp(data, "P,RIGHT") == 0)
-    {
-      // Park servo'yu saga döndürme kodlari
-      printf("Park Servo Saga Donduruldu\n");
-      // Park servo saga döndürme kodlari eklenecek
-    }
-  }
-}
-
-// Kapi kontrol fonksiyonu
-void kapi_control(char *data)
-{
-  if (data[0] == 'K')
-  {
-    // Kapi kontrol kodlari
-    printf("Kapi Kontrol Edildi\n");
-    // Kapi kontrol kodlari eklenecek
-  }
-}
-
-// Buzzer kontrol fonksiyonu
-void buzzer_control(char *data)
-{
-  if (data[0] == 'B')
-  {
-    if (strcmp(data, "B,ON") == 0)
-    {
-      // Buzzer'i açma kodlari
-      printf("Buzzer Acildi\n");
-      // Buzzer'i açma kodlari eklenecek
-    }
-    else if (strcmp(data, "B,OFF") == 0)
-    {
-      // Buzzer'i kapatma kodlari
-      printf("Buzzer Kapatildi\n");
-      // Buzzer'i kapatma kodlari eklenecek
-    }
-  }
-}
-
-
 
 /**
   * @brief System Clock Configuration
@@ -288,10 +145,13 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -301,17 +161,17 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
-  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV2;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
