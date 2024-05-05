@@ -1,0 +1,26 @@
+--cpu Cortex-M3
+"mikrodonemproje\startup_stm32f103xb.o"
+"mikrodonemproje\main.o"
+"mikrodonemproje\stm32f1xx_it.o"
+"mikrodonemproje\stm32f1xx_hal_msp.o"
+"mikrodonemproje\stm32f1xx_hal_gpio_ex.o"
+"mikrodonemproje\stm32f1xx_hal_adc.o"
+"mikrodonemproje\stm32f1xx_hal_adc_ex.o"
+"mikrodonemproje\stm32f1xx_hal.o"
+"mikrodonemproje\stm32f1xx_hal_rcc.o"
+"mikrodonemproje\stm32f1xx_hal_rcc_ex.o"
+"mikrodonemproje\stm32f1xx_hal_gpio.o"
+"mikrodonemproje\stm32f1xx_hal_dma.o"
+"mikrodonemproje\stm32f1xx_hal_cortex.o"
+"mikrodonemproje\stm32f1xx_hal_pwr.o"
+"mikrodonemproje\stm32f1xx_hal_flash.o"
+"mikrodonemproje\stm32f1xx_hal_flash_ex.o"
+"mikrodonemproje\stm32f1xx_hal_exti.o"
+"mikrodonemproje\stm32f1xx_hal_tim.o"
+"mikrodonemproje\stm32f1xx_hal_tim_ex.o"
+"mikrodonemproje\stm32f1xx_hal_usart.o"
+"mikrodonemproje\system_stm32f1xx.o"
+--strict --scatter "MikroDonemProje\MikroDonemProje.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "MikroDonemProje.map" -o MikroDonemProje\MikroDonemProje.axf
