@@ -20,6 +20,7 @@
 "mikrodonemproje\stm32f1xx_hal_tim_ex.o"
 "mikrodonemproje\stm32f1xx_hal_usart.o"
 "mikrodonemproje\system_stm32f1xx.o"
+"mikrodonemproje\usar_getdata_manage_1.o"
 --strict --scatter "MikroDonemProje\MikroDonemProje.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

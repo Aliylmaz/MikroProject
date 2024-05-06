@@ -1,0 +1,1 @@
+mikrodonemproje/usar_getdata_manage_1.o: USAR_GetData_Manage.c
