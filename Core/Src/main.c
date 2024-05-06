@@ -20,7 +20,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "dataProcessing.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -50,6 +50,17 @@ TIM_HandleTypeDef htim3;
 USART_HandleTypeDef husart1;
 
 /* USER CODE BEGIN PV */
+
+//---- CONTROL STATUS ----
+
+uint8_t RGB_LED_red=0;  // 0-255 ARASINDA DEGER 
+uint8_t RGB_LED_green=0; // 0-255 ARASINDA DEGER 
+uint8_t RGB_LED_blue=0; // 0-255 ARASINDA DEGER 
+uint8_t RGB_LED_brightness=0; // 0-100 ARASINDA DEGER 
+uint8_t DOOR_status= 0; // 0 YADA 1
+uint8_t PARK_status= 0; // 0 YADA 1
+uint8_t BUZZER_status= 0; // 0 YADA 1
+uint8_t GARDEN_LIGHT_status= 0; // 0 YADA 1
 
 
 
@@ -83,6 +94,7 @@ static void MX_USART1_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -120,7 +132,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	
 		
+
 		
 		
 		
