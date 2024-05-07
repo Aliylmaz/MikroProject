@@ -47,7 +47,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+extern uint8_t getData[];
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -56,7 +56,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern USART_HandleTypeDef husart1;
+extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -204,15 +204,20 @@ void SysTick_Handler(void)
 /**
   * @brief This function handles USART1 global interrupt.
   */
+void process_command();
+
 void USART1_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART1_IRQn 0 */
+  HAL_UART_IRQHandler(&huart1);
+}
 
-  /* USER CODE END USART1_IRQn 0 */
-  HAL_USART_IRQHandler(&husart1);
-  /* USER CODE BEGIN USART1_IRQn 1 */
-
-  /* USER CODE END USART1_IRQn 1 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart == &huart1)
+  {
+    process_command();
+    HAL_UART_Receive_IT(&huart1, getData, 1); // Bir sonraki karakteri almak için tekrar kesme baslat
+  }
 }
 
 /* USER CODE BEGIN 1 */

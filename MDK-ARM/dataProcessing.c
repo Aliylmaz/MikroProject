@@ -2,6 +2,8 @@
 #include "dataProcessing.h"
 #include "stm32f1xx_hal.h"
 #include "main.h"
+#include "string.h"
+#include "stdio.h"
 
 
 
@@ -15,6 +17,8 @@ extern uint8_t DOOR_status; // KEY CHAR D
 extern uint8_t PARK_status; // KEY CHAR P
 extern uint8_t BUZZER_status; // KEY CHAR B
 extern uint8_t GARDEN_LIGHT_status; // KEY CHAR G
+extern uint8_t	getData[];
+
 
 
 /* ÖRNEK GELEN DATALAR
@@ -34,12 +38,43 @@ extern uint8_t GARDEN_LIGHT_status; // KEY CHAR G
 	
 */
 
-
-void process_command(){
-	
-	
-	
+void process_command() {
+    
+    if (strlen( getData[0]) > 0) {
+        // Gelen verinin ilk karakterine göre islem yap
+        switch (getData[0]) {
+            case 'R':
+                // RGB LED kontrolü
+             
+                rgb_led_control();
+                break;
+            case 'D':
+                // Kapi kontrolü
+             
+                kapi_control();
+                break;
+            case 'P':
+                // Park kontrolü
+              
+                park_servo_control();
+                break;
+            case 'B':
+                // Buzzer kontrolü
+              
+                buzzer_control();
+                break;
+            case 'G':
+                // Bahçe isigi kontrolü
+               
+                normal_led_control();
+                break;
+            default:
+                // Bilinmeyen komut
+                break;
+        }
+    }
 }
+
 
 void rgb_led_control(){
 

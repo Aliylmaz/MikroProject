@@ -4,7 +4,7 @@
 
 
 
-void process_command();
+void process_command(char*data);
 void rgb_led_control();
 void normal_led_control();
 void park_servo_control();
