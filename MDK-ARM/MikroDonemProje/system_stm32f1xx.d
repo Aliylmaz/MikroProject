@@ -3,9 +3,9 @@ mikrodonemproje/system_stm32f1xx.o: ..\Core\Src\system_stm32f1xx.c \
   ..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xb.h \
   ..\Drivers\CMSIS\Include\core_cm3.h \
   C:\Keil_v5\ARM\ARMCLANG\include\stdint.h \
-  C:\Users\fbali\OneDrive\Belgeler\GitHub\MikroProject\Drivers\CMSIS\Include\cmsis_version.h \
-  C:\Users\fbali\OneDrive\Belgeler\GitHub\MikroProject\Drivers\CMSIS\Include\cmsis_compiler.h \
-  C:\Users\fbali\OneDrive\Belgeler\GitHub\MikroProject\Drivers\CMSIS\Include\cmsis_armclang.h \
+  C:\Users\furka\Documents\MikroProject\Drivers\CMSIS\Include\cmsis_version.h \
+  C:\Users\furka\Documents\MikroProject\Drivers\CMSIS\Include\cmsis_compiler.h \
+  C:\Users\furka\Documents\MikroProject\Drivers\CMSIS\Include\cmsis_armclang.h \
   C:\Keil_v5\ARM\ARMCLANG\include\arm_compat.h \
   C:\Keil_v5\ARM\ARMCLANG\include\arm_acle.h \
   ..\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h \
@@ -29,4 +29,4 @@ mikrodonemproje/system_stm32f1xx.o: ..\Core\Src\system_stm32f1xx.c \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim_ex.h \
-  ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_usart.h
+  ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h

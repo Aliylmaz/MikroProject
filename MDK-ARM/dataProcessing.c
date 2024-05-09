@@ -17,14 +17,14 @@ extern uint8_t DOOR_status; // KEY CHAR D
 extern uint8_t PARK_status; // KEY CHAR P
 extern uint8_t BUZZER_status; // KEY CHAR B
 extern uint8_t GARDEN_LIGHT_status; // KEY CHAR G
-extern uint8_t	getData[];
+extern char	getData[];
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim2;
 
 
 /* ÖRNEK GELEN DATALAR
 
-  -(R,r=138,g=112,b=23,B=55!!!!!!!!!!!)
+  -(R,r=138,g=112,b=23,B=55!!!!!!!)
 	alacak degerler;
 	
 	RGB_LED_red=138
@@ -109,13 +109,13 @@ void rgb_led_control()
 void normal_led_on()
 {
     // LED'i aç
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+   
 }
 
 void normal_led_off()
 {
     // LED'i kapat
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+    
 }
 
 
@@ -158,7 +158,7 @@ void kapi_control()
         pulse_width = 1000;  // 1000us
     }
 
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pulse_width);
+
 }
 
 void buzzer_control()

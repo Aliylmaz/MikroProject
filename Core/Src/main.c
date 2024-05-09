@@ -23,11 +23,21 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+	uint16_t RGB_LED_red=0;  // 0-255 ARASINDA DEGER 
+	uint8_t RGB_LED_green=0; // 0-255 ARASINDA DEGER 
+	uint8_t RGB_LED_blue=0; // 0-255 ARASINDA DEGER 
+	uint8_t RGB_LED_brightness=0; // 0-100 ARASINDA DEGER 
+	uint8_t DOOR_status= 0; // 0 YADA 1
+	uint8_t PARK_status= 0; // 0 YADA 1
+	uint8_t BUZZER_status= 0; // 0 YADA 1
+	uint8_t GARDEN_LIGHT_status= 0; // 0 YADA 1
+	char getData[30];
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+	#include "string.h"
+	#include "dataProcessing.h"
 
 /* USER CODE END PTD */
 
@@ -53,15 +63,7 @@ UART_HandleTypeDef huart1;
 
 //---- CONTROL STATUS ----
 
-uint8_t RGB_LED_red=0;  // 0-255 ARASINDA DEGER 
-uint8_t RGB_LED_green=0; // 0-255 ARASINDA DEGER 
-uint8_t RGB_LED_blue=0; // 0-255 ARASINDA DEGER 
-uint8_t RGB_LED_brightness=0; // 0-100 ARASINDA DEGER 
-uint8_t DOOR_status= 0; // 0 YADA 1
-uint8_t PARK_status= 0; // 0 YADA 1
-uint8_t BUZZER_status= 0; // 0 YADA 1
-uint8_t GARDEN_LIGHT_status= 0; // 0 YADA 1
-uint8_t getData[30];
+
 
 
 
@@ -97,7 +99,8 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+	uint8_t furkan=42;
+	int flag=1;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -135,10 +138,18 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		if(flag==1){
+			strcpy(getData, "R,r=138,g=112,b=23,B=55!!!!!!!");
+			flag = 0 ;
+		}
+		
 	
 		
-
+		HAL_Delay(500);
 		
+		HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+		HAL_Delay(500);
+		process_command();
 		
 		
 		
