@@ -32,12 +32,24 @@
 	uint8_t BUZZER_status= 0; // 0 YADA 1
 	uint8_t GARDEN_LIGHT_status= 0; // 0 YADA 1
 	char getData[30];
+	float Temperature, Humidity;
+	
+	
+	
+	
+	
+	uint8_t tCelsius = 0;
+
+
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 	#include "string.h"
 	#include "dataProcessing.h"
+	#include "DHT11_DRIVER.h"
 
 /* USER CODE END PTD */
 
@@ -54,6 +66,7 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
+TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
@@ -79,6 +92,7 @@ static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 
@@ -125,10 +139,12 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 	__HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
-
-
+	 HAL_TIM_Base_Start(&htim1);
+	DHT_DataTypedef DHT11_Data;
+	
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -143,15 +159,20 @@ int main(void)
 			flag = 0 ;
 		}
 		
+		
+		GPIO_InitTypeDef GPIO_InitStruct;
+		GPIO_InitStruct.Pin = GPIO_PIN_5;
+		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // Push-Pull çikis modu
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW; // Düsük hizda çikis
+		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+		
 	
-		
-		HAL_Delay(500);
-		
-		HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
-		HAL_Delay(500);
-		process_command();
-		
-		
+			HAL_GPIO_OU (DHT11_PORT, DHT11_PIN);  // set the pin as output
+			HAL_GPIO_WritePin (DHT11_PORT, DHT11_PIN, 0);   // pull the pin low
+			HAL_Delay (18);   // wait for 18ms
+			Set_Pin_Input(DHT11_PORT, DHT11_PIN);    // set as input
+			
+   
 		
 		
 		
@@ -250,6 +271,52 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 71;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 65535;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
 
 }
 
@@ -418,13 +485,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, DHT11_Pin|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PC13 PC14 PC15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  /*Configure GPIO pins : DHT11_Pin PC14 PC15 */
+  GPIO_InitStruct.Pin = DHT11_Pin|GPIO_PIN_14|GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

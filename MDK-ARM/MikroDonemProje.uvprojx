@@ -570,6 +570,16 @@
               <FileType>5</FileType>
               <FilePath>.\dataProcessing.h</FilePath>
             </File>
+            <File>
+              <FileName>DHT11_DRIVER.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\DHT11_DRIVER.c</FilePath>
+            </File>
+            <File>
+              <FileName>DHT11_DRIVER.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\DHT11_DRIVER.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
