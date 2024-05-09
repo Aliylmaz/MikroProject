@@ -18,7 +18,8 @@ extern uint8_t PARK_status; // KEY CHAR P
 extern uint8_t BUZZER_status; // KEY CHAR B
 extern uint8_t GARDEN_LIGHT_status; // KEY CHAR G
 extern uint8_t	getData[];
-
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim2;
 
 
 /* ÖRNEK GELEN DATALAR
@@ -38,35 +39,47 @@ extern uint8_t	getData[];
 	
 */
 
-void process_command() {
-    
-    if (strlen( getData[0]) > 0) {
-        // Gelen verinin ilk karakterine göre islem yap
-        switch (getData[0]) {
+
+
+void process_command()
+{
+    if (getData[0] != '\0')
+    {
+        // Verinin ilk karakterine göre islem yap
+        switch (getData[0])
+        {
             case 'R':
-                // RGB LED kontrolü
-             
-                rgb_led_control();
+                if (sscanf((char *)getData, "R,r=%hhu,g=%hhu,b=%hhu,B=%hhu", &RGB_LED_red, &RGB_LED_green, &RGB_LED_blue, &RGB_LED_brightness) == 4)
+                {
+                    rgb_led_control();
+                }
                 break;
             case 'D':
-                // Kapi kontrolü
-             
-                kapi_control();
+                if (sscanf((char *)getData, "D,%hhu", &DOOR_status) == 1)
+                {
+                    kapi_control();
+                }
                 break;
             case 'P':
-                // Park kontrolü
-              
-                park_servo_control();
+                if (sscanf((char *)getData, "P,%hhu", &PARK_status) == 1)
+                {
+                    park_servo_control();
+                }
                 break;
             case 'B':
-                // Buzzer kontrolü
-              
-                buzzer_control();
+                if (sscanf((char *)getData, "B,%hhu", &BUZZER_status) == 1)
+                {
+                    buzzer_control();
+                }
                 break;
             case 'G':
-                // Bahçe isigi kontrolü
-               
-                normal_led_control();
+               if (sscanf((char *)getData, "G,%hhu", &GARDEN_LIGHT_status) == 1){
+									if (GARDEN_LIGHT_status){
+										normal_led_on();
+									}else{
+										normal_led_off();
+									}
+								}
                 break;
             default:
                 // Bilinmeyen komut
@@ -75,28 +88,80 @@ void process_command() {
     }
 }
 
+void rgb_led_control()
+{
+    // PWM duty cycle degerleri
+    uint32_t red_duty = (RGB_LED_red * RGB_LED_brightness) / 255;
+    uint32_t green_duty = (RGB_LED_green * RGB_LED_brightness) / 255;
+    uint32_t blue_duty = (RGB_LED_blue * RGB_LED_brightness) / 255;
 
-void rgb_led_control(){
+    // TIM3_CH1 (PA6) için kirmizi bileseni ayarla
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, red_duty);
 
+    // TIM3_CH2 (PA7) için yesil bileseni ayarla
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, green_duty);
 
+    // TIM3_CH3 (PB0) için mavi bileseni ayarla
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, blue_duty);
 }
 
-void normal_led_control(){
 
-
+void normal_led_on()
+{
+    // LED'i aç
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 }
 
-void park_servo_control(){
-
-
+void normal_led_off()
+{
+    // LED'i kapat
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 }
 
-void kapi_control(){
 
+void park_servo_control()
+{
+    // Park servo kontrol fonksiyonu
+    // PARK_status 0 veya 1 olabilir, buna göre servoyu konumlandir
 
+    uint32_t pulse_width;
+
+    if (PARK_status == 1)
+    {
+        // Servo 180 derece pozisyonunda, araba parkta
+        pulse_width = 2000;  // 2000us
+    }
+    else
+    {
+        // Servo 0 derece pozisyonunda, araba disarida
+        pulse_width = 1000;  // 1000us
+    }
+
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pulse_width);
 }
 
-void buzzer_control(){
+void kapi_control()
+{
+    // Kapi kontrol fonksiyonu
+    // DOOR_status 0 veya 1 olabilir, buna göre kapiyi konumlandir
 
+    uint32_t pulse_width;
 
+    if (DOOR_status == 1)
+    {
+        // Kapi açik pozisyonu (90 derece)
+        pulse_width = 1500;  // 1500us
+    }
+    else
+    {
+        // Kapi kapali pozisyonu (0 derece)
+        pulse_width = 1000;  // 1000us
+    }
+
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pulse_width);
+}
+
+void buzzer_control()
+{
+    // Buzzer kontrol fonksiyonu
 }
