@@ -21,7 +21,7 @@
 "mikrodonemproje\stm32f1xx_hal_uart.o"
 "mikrodonemproje\system_stm32f1xx.o"
 "mikrodonemproje\dataprocessing.o"
-"mikrodonemproje\dht11_driver.o"
+"mikrodonemproje\dht.o"
 --strict --scatter "MikroDonemProje\MikroDonemProje.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

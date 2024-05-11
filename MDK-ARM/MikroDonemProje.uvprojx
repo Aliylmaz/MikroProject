@@ -571,14 +571,14 @@
               <FilePath>.\dataProcessing.h</FilePath>
             </File>
             <File>
-              <FileName>DHT11_DRIVER.c</FileName>
+              <FileName>DHT.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\DHT11_DRIVER.c</FilePath>
+              <FilePath>.\DHT.c</FilePath>
             </File>
             <File>
-              <FileName>DHT11_DRIVER.h</FileName>
+              <FileName>DHT.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\DHT11_DRIVER.h</FilePath>
+              <FilePath>.\DHT.h</FilePath>
             </File>
           </Files>
         </Group>

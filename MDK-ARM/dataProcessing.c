@@ -95,14 +95,7 @@ void rgb_led_control()
     uint32_t green_duty = (RGB_LED_green * RGB_LED_brightness) / 255;
     uint32_t blue_duty = (RGB_LED_blue * RGB_LED_brightness) / 255;
 
-    // TIM3_CH1 (PA6) için kirmizi bileseni ayarla
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, red_duty);
-
-    // TIM3_CH2 (PA7) için yesil bileseni ayarla
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, green_duty);
-
-    // TIM3_CH3 (PB0) için mavi bileseni ayarla
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, blue_duty);
+ 
 }
 
 
