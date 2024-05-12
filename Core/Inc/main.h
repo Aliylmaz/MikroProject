@@ -61,12 +61,6 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define DHT11_Pin GPIO_PIN_0
 #define DHT11_GPIO_Port GPIOA
-#define BLUE_PWM_Pin GPIO_PIN_2
-#define BLUE_PWM_GPIO_Port GPIOA
-#define RED_PWM_Pin GPIO_PIN_15
-#define RED_PWM_GPIO_Port GPIOA
-#define GREEN_PWM_Pin GPIO_PIN_3
-#define GREEN_PWM_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

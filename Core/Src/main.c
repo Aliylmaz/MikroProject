@@ -100,9 +100,6 @@ DHT_DataTypedef DHT11_Data;
 float Temparature,Humidity;
 long last= 0 ;
 int i = 0;
-uint8_t channel_1_CCR= 0;
-uint8_t channel_2_CCR= 0;
-
 
 
 /* USER CODE END PFP */
@@ -150,8 +147,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	__HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
 	 HAL_TIM_Base_Start(&htim1);
-	 HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_2);
-	 HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
 
 	
   /* USER CODE END 2 */
@@ -171,8 +166,6 @@ int main(void)
 		DHT_GetData(&DHT11_Data);
 		temparature = DHT11_Data.Temperature;
 		Humidity = DHT11_Data.Humidity;
-		TIM2->CCR1 = channel_1_CCR;
-		TIM2->CCR2 = channel_2_CCR;
 		
 		HAL_Delay(50);
 		
@@ -338,9 +331,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 71;
+  htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 254;
+  htim2.Init.Period = 65535;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
