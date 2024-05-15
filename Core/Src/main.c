@@ -37,7 +37,8 @@
 	uint8_t gasStatus = 0; // Z
 	uint8_t waterStatus = 0 ; // W
 	float Temparature,Humidity; // C - H
-	
+	int sendDataSatatus=0;
+	uint8_t index;
 	
 	
 	uint8_t deneme=0;
@@ -54,7 +55,7 @@
 	uint16_t gasValue;
 	uint16_t doorValue = 0;
 	uint8_t channel_1_CCR= 0;
-	uint8_t sendValues[42];
+	uint8_t sendValues[100];
 	uint8_t channel_2_CCR= 0;
 	uint8_t buzzer_flag;
 	uint16_t waterSensorValue=0;
@@ -159,49 +160,64 @@ void gardenLightControl(){
 	
 }
 
+void appendValue(int value) {
+    if (value >= 100) {
+        sendValues[index++] = (char)(value / 100 + '0');
+        sendValues[index++] = (char)((value % 100) / 10 + '0');
+        sendValues[index++] = (char)((value % 100) % 10 + '0');
+    } else if (value >= 10) {
+        sendValues[index++] = (char)(value / 10 + '0');
+        sendValues[index++] = (char)(value % 10 + '0');
+    } else {
+        sendValues[index++] = (char)(value + '0');
+    }
+}
+
 void setSenddingData(){
 	
-	sendValues[0] ='C';
-	sendValues[1] = (int)temparature;
-	sendValues[2] =',';
-	sendValues[3]= 'N';
-	sendValues[5]= (int ) Humidity;
-	sendValues[6] =',';
-	sendValues[7] = 'r';
-	sendValues[8] = RGB_LED_red;
-	sendValues[9]= ',';
-	sendValues[10]= 'b';
-	sendValues[11] = RGB_LED_blue;
-	sendValues[12] = ',';
-	sendValues[13] ='B';
-	sendValues[14]= RGB_LED_brightness;
-	sendValues[15]= ',';
-	sendValues[16]= 'D';
-	sendValues[17] = DOOR_status;
-	sendValues[18] = ',';
-	sendValues[19] ='P';
-	sendValues[20]= PARK_status;
-	sendValues[21]= ',';
-	sendValues[22] ='A';
-	sendValues[23]= BUZZER_status;
-	sendValues[24]= ',';
-	sendValues[25]= 'G';
-	sendValues[26] = GARDEN_LIGHT_status;
-	sendValues[27] = ',';
-	sendValues[28] ='H';
-	sendValues[29]= heaterStatus;
-	sendValues[30]= ',';
-	sendValues[31] ='I';
-	sendValues[32]= airconditioningStatus;
-	sendValues[33]= ',';
-	sendValues[34]= 'T';
-	sendValues[35] = targetHeat;
-	sendValues[36] = ',';
-	sendValues[37] ='Z';
-	sendValues[38]= gasStatus;
-	sendValues[39]= ',';
-	sendValues[40] ='W';
-	sendValues[41]= waterStatus;
+sendValues[index++] = 'C';
+appendValue(temparature);
+sendValues[index++] = ',';
+sendValues[index++] = 'N';
+appendValue(Humidity);
+sendValues[index++] = ',';
+sendValues[index++] = 'r';
+appendValue(RGB_LED_red);
+sendValues[index++] = ',';
+sendValues[index++] = 'b';
+appendValue(RGB_LED_blue);
+sendValues[index++] = ',';
+sendValues[index++] = 'B';
+appendValue(RGB_LED_brightness);
+sendValues[index++] = ',';
+sendValues[index++] = 'D';
+appendValue(DOOR_status);
+sendValues[index++] = ',';
+sendValues[index++] = 'P';
+appendValue(PARK_status);
+sendValues[index++] = ',';
+sendValues[index++] = 'A';
+appendValue(BUZZER_status);
+sendValues[index++] = ',';
+sendValues[index++] = 'G';
+appendValue(GARDEN_LIGHT_status);
+sendValues[index++] = ',';
+sendValues[index++] = 'H';
+appendValue(heaterStatus);
+sendValues[index++] = ',';
+sendValues[index++] = 'I';
+appendValue(airconditioningStatus);
+sendValues[index++] = ',';
+sendValues[index++] = 'T';
+appendValue(targetHeat);
+sendValues[index++] = ',';
+sendValues[index++] = 'Z';
+appendValue(gasStatus);
+sendValues[index++] = ',';
+sendValues[index++] = 'W';
+appendValue(waterStatus);
+
+sendValues[index] = '\0';
 	
 	
 	
@@ -209,7 +225,25 @@ void setSenddingData(){
 	
 }
 
-
+void sendData(){
+	
+	
+	setSenddingData();
+	
+	HAL_UART_Transmit_IT(&huart1,(uint8_t *) &sendValues,index);
+	index=0;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}
 
 
 
@@ -305,11 +339,8 @@ void buzzerAc(uint8_t onOff){
   * @retval int
   */
 int main(void)
-{
-	
-	
-	
-	
+	{
+
   /* USER CODE BEGIN 1 */
 	uint8_t furkan=42;
 	int flag=1;
@@ -368,52 +399,60 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		
-		if(TIM4->CNT > 500){
-					
-					if(GARDEN_LIGHT_status){
-						
-						GARDEN_LIGHT_status=0;
-					}else{
-						GARDEN_LIGHT_status=1;
-						
-					}
-					TIM4->CNT=0;
-				
-					
-				}
+		if(sendDataSatatus){
+			
+			sendData();
+			sendDataSatatus=0;
+		}
 		
 		
-		//DHT_GetData(&DHT11_Data);
+		DHT_GetData(&DHT11_Data);
+		
+		HAL_Delay(500);
+		
 		temparature = DHT11_Data.Temperature;
+		
 		Humidity = DHT11_Data.Humidity;
+		
 		HAL_ADC_Start(&hadc1);
+		
 		HAL_ADC_Start(&hadc2);
 		
 		
+		
 		gasValue=HAL_ADC_GetValue(&hadc1);
+		
 		waterSensorValue=HAL_ADC_GetValue(&hadc2);
 	
 		
 		
 		
 		__HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
+		
 		aracDondur(PARK_status);
+		
 		kapiAc(DOOR_status);
+		
 		gardenLightControl();
 		
 		
 		rgbControl();
+		
+		
 		buzzerAc(BUZZER_status);
-		setSenddingData();
+		
+
+		
 		airconditioning_set(airconditioningStatus);
+		
 		heater_set(heaterStatus);
 		
 		
 		
 		
-		HAL_UART_Transmit_IT(&huart1,(uint8_t *) &sendValues,41);
 		
-		HAL_Delay(500);
+		
+		
 		
 		
 	
@@ -753,7 +792,7 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 10000;
+  htim4.Init.Prescaler = 1000;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

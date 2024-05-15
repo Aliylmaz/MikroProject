@@ -20,6 +20,7 @@ extern uint8_t GARDEN_LIGHT_status; // KEY CHAR G
 extern char	getData[];
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim2;
+extern int sendDataSatatus;
 
 
 /* ÖRNEK GELEN DATALAR
@@ -82,6 +83,17 @@ void process_command()
 								}
                 break;
 								
+								 case 'V':
+               if (sscanf((char *)getData, "V,%hhu", &sendDataSatatus) == 1){
+									if (GARDEN_LIGHT_status){
+									
+									}else{
+								
+									}
+								}
+                break;
+								
+								
             default:
                 // Bilinmeyen komut
                 break;
@@ -89,52 +101,3 @@ void process_command()
     }
 }
 
-void rgb_led_control()
-{
-    // PWM duty cycle degerleri
-   
-
- 
-}
-
-
-void normal_led_on()
-{
-    // LED'i aç
-   
-}
-
-void normal_led_off()
-{
-    // LED'i kapat
-    
-}
-
-
-
-
-void kapi_control()
-{
-    // Kapi kontrol fonksiyonu
-    // DOOR_status 0 veya 1 olabilir, buna göre kapiyi konumlandir
-
-    uint32_t pulse_width;
-
-    if (DOOR_status == 1)
-    {
-        // Kapi açik pozisyonu (90 derece)
-        pulse_width = 1500;  // 1500us
-    }
-    else
-    {
-        // Kapi kapali pozisyonu (0 derece)
-        pulse_width = 1000;  // 1000us
-    }
-
-
-}
-
-void buzzer_control()
-{
-    // Buzzer kontrol fonksiyonu
-}
