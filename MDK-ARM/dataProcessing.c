@@ -51,36 +51,37 @@ void process_command()
             case 'R':
                 if (sscanf((char *)getData, "R,r=%hhu,g=%hhu,b=%hhu,B=%hhu", &RGB_LED_red, &RGB_LED_green, &RGB_LED_blue, &RGB_LED_brightness) == 4)
                 {
-                    rgb_led_control();
+                  
                 }
                 break;
             case 'D':
                 if (sscanf((char *)getData, "D,%hhu", &DOOR_status) == 1)
                 {
-                    kapi_control();
+                
                 }
                 break;
             case 'P':
                 if (sscanf((char *)getData, "P,%hhu", &PARK_status) == 1)
                 {
-                    park_servo_control();
+                   
                 }
                 break;
             case 'B':
                 if (sscanf((char *)getData, "B,%hhu", &BUZZER_status) == 1)
                 {
-                    buzzer_control();
+                   
                 }
                 break;
             case 'G':
                if (sscanf((char *)getData, "G,%hhu", &GARDEN_LIGHT_status) == 1){
 									if (GARDEN_LIGHT_status){
-										normal_led_on();
+									
 									}else{
-										normal_led_off();
+								
 									}
 								}
                 break;
+								
             default:
                 // Bilinmeyen komut
                 break;
@@ -91,9 +92,7 @@ void process_command()
 void rgb_led_control()
 {
     // PWM duty cycle degerleri
-    uint32_t red_duty = (RGB_LED_red * RGB_LED_brightness) / 255;
-    uint32_t green_duty = (RGB_LED_green * RGB_LED_brightness) / 255;
-    uint32_t blue_duty = (RGB_LED_blue * RGB_LED_brightness) / 255;
+   
 
  
 }
@@ -112,26 +111,7 @@ void normal_led_off()
 }
 
 
-void park_servo_control()
-{
-    // Park servo kontrol fonksiyonu
-    // PARK_status 0 veya 1 olabilir, buna göre servoyu konumlandir
 
-    uint32_t pulse_width;
-
-    if (PARK_status == 1)
-    {
-        // Servo 180 derece pozisyonunda, araba parkta
-        pulse_width = 2000;  // 2000us
-    }
-    else
-    {
-        // Servo 0 derece pozisyonunda, araba disarida
-        pulse_width = 1000;  // 1000us
-    }
-
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pulse_width);
-}
 
 void kapi_control()
 {

@@ -23,17 +23,42 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-	uint16_t RGB_LED_red=0;  // 0-255 ARASINDA DEGER 
-	uint8_t RGB_LED_green=0; // 0-255 ARASINDA DEGER 
-	uint8_t RGB_LED_blue=0; // 0-255 ARASINDA DEGER 
-	uint8_t RGB_LED_brightness=0; // 0-100 ARASINDA DEGER 
-	uint8_t DOOR_status= 0; // 0 YADA 1
-	uint8_t PARK_status= 0; // 0 YADA 1
-	uint8_t BUZZER_status= 0; // 0 YADA 1
-	uint8_t GARDEN_LIGHT_status= 0; // 0 YADA 1
+	uint16_t RGB_LED_red=0;  // 0-255 ARASINDA DEGER r
+	uint8_t RGB_LED_green=0; // 0-255 ARASINDA DEGER g
+	uint8_t RGB_LED_blue=0; // 0-255 ARASINDA DEGER b
+	uint8_t RGB_LED_brightness=0; // 0-100 ARASINDA DEGER B
+	uint8_t DOOR_status= 0; // 0 YADA 1 D
+	uint8_t PARK_status= 0; // 0 YADA 1 P
+	uint8_t BUZZER_status= 0; // 0 YADA 1 A
+	uint8_t GARDEN_LIGHT_status= 0; // 0 YADA 1 G
+	uint8_t heaterStatus = 0; //H
+	uint8_t airconditioningStatus = 0; // I
+	uint8_t targetHeat=0; //T
+	uint8_t gasStatus = 0; // Z
+	uint8_t waterStatus = 0 ; // W
+	float Temparature,Humidity; // C - H
+	
+	
+	
+	uint8_t deneme=0;
 	char getData[30];
+	uint8_t deneme;
 	float temparature, Humidity;
 	
+	void Read_DataDHT(void);
+
+
+	long last= 0 ;
+	int i = 0;
+	
+	uint16_t gasValue;
+	uint16_t doorValue = 0;
+	uint8_t channel_1_CCR= 0;
+	uint8_t sendValues[42];
+	uint8_t channel_2_CCR= 0;
+	uint8_t buzzer_flag;
+	uint16_t waterSensorValue=0;
+		
 	
 	
 	
@@ -65,10 +90,13 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc2;
+DMA_HandleTypeDef hdma_adc1;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart1;
 
@@ -88,28 +116,188 @@ UART_HandleTypeDef huart1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_ADC2_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 
-void Read_DataDHT(void);
+
 DHT_DataTypedef DHT11_Data;
-float Temparature,Humidity;
-long last= 0 ;
-int i = 0;
-uint8_t channel_1_CCR= 0;
-uint8_t channel_2_CCR= 0;
-
-
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+
+
+
+
+
+
+
+
+void gardenLightControl(){
+	
+	if(GARDEN_LIGHT_status==1){
+		HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_SET);
+		
+	}else{
+		
+		HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_RESET);
+		
+	}
+	
+	
+	
+	
+}
+
+void setSenddingData(){
+	
+	sendValues[0] ='C';
+	sendValues[1] = (int)temparature;
+	sendValues[2] =',';
+	sendValues[3]= 'N';
+	sendValues[5]= (int ) Humidity;
+	sendValues[6] =',';
+	sendValues[7] = 'r';
+	sendValues[8] = RGB_LED_red;
+	sendValues[9]= ',';
+	sendValues[10]= 'b';
+	sendValues[11] = RGB_LED_blue;
+	sendValues[12] = ',';
+	sendValues[13] ='B';
+	sendValues[14]= RGB_LED_brightness;
+	sendValues[15]= ',';
+	sendValues[16]= 'D';
+	sendValues[17] = DOOR_status;
+	sendValues[18] = ',';
+	sendValues[19] ='P';
+	sendValues[20]= PARK_status;
+	sendValues[21]= ',';
+	sendValues[22] ='A';
+	sendValues[23]= BUZZER_status;
+	sendValues[24]= ',';
+	sendValues[25]= 'G';
+	sendValues[26] = GARDEN_LIGHT_status;
+	sendValues[27] = ',';
+	sendValues[28] ='H';
+	sendValues[29]= heaterStatus;
+	sendValues[30]= ',';
+	sendValues[31] ='I';
+	sendValues[32]= airconditioningStatus;
+	sendValues[33]= ',';
+	sendValues[34]= 'T';
+	sendValues[35] = targetHeat;
+	sendValues[36] = ',';
+	sendValues[37] ='Z';
+	sendValues[38]= gasStatus;
+	sendValues[39]= ',';
+	sendValues[40] ='W';
+	sendValues[41]= waterStatus;
+	
+	
+	
+	
+	
+}
+
+
+
+
+
+
+void heater_set(uint8_t status){
+	
+	if(status){
+		
+		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
+		
+	}else{
+		
+		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_RESET);
+	}
+	
+	
+}
+
+
+
+void airconditioning_set(uint8_t status){
+	
+	if(status){
+		
+		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_13,GPIO_PIN_SET);
+		
+	}else{
+		
+		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_13,GPIO_PIN_RESET);
+	}
+	
+	
+}
+
+
+
+
+void rgbControl(){
+	
+	TIM2->CCR1 = (uint8_t)(((uint16_t)RGB_LED_red * (uint16_t)RGB_LED_brightness) / 100) ;
+	TIM2->CCR2 = (uint8_t)(((uint16_t)RGB_LED_green * (uint16_t)RGB_LED_brightness) / 100) ;
+	TIM2->CCR3 = (uint8_t)(((uint16_t)RGB_LED_blue * (uint16_t)RGB_LED_brightness) / 100) ;
+		
+	
+}
+
+void aracDondur(uint8_t yon){
+	
+	if(yon==1){
+		
+		TIM3->CCR1=2350;
+	}
+	else{
+		TIM3->CCR1=350;
+		
+	}
+	
+}
+
+
+void kapiAc(uint8_t yon){
+	
+	if(yon==1){
+		
+		TIM3->CCR2=1350;
+	}
+	else{
+		TIM3->CCR2=350;
+		
+	}
+	
+}
+
+
+void buzzerAc(uint8_t onOff){
+	
+	if(onOff==0x01){
+		
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_SET);
+	}
+	else{
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_RESET);
+		
+	}
+	
+	
+	
+}
 /* USER CODE END 0 */
 
 /**
@@ -118,7 +306,10 @@ uint8_t channel_2_CCR= 0;
   */
 int main(void)
 {
-
+	
+	
+	
+	
   /* USER CODE BEGIN 1 */
 	uint8_t furkan=42;
 	int flag=1;
@@ -142,16 +333,29 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
+  MX_ADC2_Init();
   MX_TIM1_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 	__HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
-	 HAL_TIM_Base_Start(&htim1);
+	
+	
+	
+
+	 HAL_TIM_Base_Start(&htim3);
+	 HAL_TIM_Base_Start(&htim4);
+	 HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_3);
 	 HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_2);
 	 HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
+	 HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_1);
+	 HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_2);
+	 
+	 HAL_TIM_Base_Start_IT(&htim1);
 
 	
   /* USER CODE END 2 */
@@ -163,18 +367,58 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		if(flag==1){
-			strcpy(getData, "R,r=138,g=112,b=23,B=55!!!!!!!");
-			flag = 0 ;
-		}
 		
-		DHT_GetData(&DHT11_Data);
+		if(TIM4->CNT > 500){
+					
+					if(GARDEN_LIGHT_status){
+						
+						GARDEN_LIGHT_status=0;
+					}else{
+						GARDEN_LIGHT_status=1;
+						
+					}
+					TIM4->CNT=0;
+				
+					
+				}
+		
+		
+		//DHT_GetData(&DHT11_Data);
 		temparature = DHT11_Data.Temperature;
 		Humidity = DHT11_Data.Humidity;
-		TIM2->CCR1 = channel_1_CCR;
-		TIM2->CCR2 = channel_2_CCR;
+		HAL_ADC_Start(&hadc1);
+		HAL_ADC_Start(&hadc2);
 		
-		HAL_Delay(50);
+		
+		gasValue=HAL_ADC_GetValue(&hadc1);
+		waterSensorValue=HAL_ADC_GetValue(&hadc2);
+	
+		
+		
+		
+		__HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
+		aracDondur(PARK_status);
+		kapiAc(DOOR_status);
+		gardenLightControl();
+		
+		
+		rgbControl();
+		buzzerAc(BUZZER_status);
+		setSenddingData();
+		airconditioning_set(airconditioningStatus);
+		heater_set(heaterStatus);
+		
+		
+		
+		
+		HAL_UART_Transmit_IT(&huart1,(uint8_t *) &sendValues,41);
+		
+		HAL_Delay(500);
+		
+		
+	
+		
+		
 		
   }
   /* USER CODE END 3 */
@@ -274,6 +518,53 @@ static void MX_ADC1_Init(void)
 }
 
 /**
+  * @brief ADC2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC2_Init(void)
+{
+
+  /* USER CODE BEGIN ADC2_Init 0 */
+
+  /* USER CODE END ADC2_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC2_Init 1 */
+
+  /* USER CODE END ADC2_Init 1 */
+
+  /** Common config
+  */
+  hadc2.Instance = ADC2;
+  hadc2.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc2.Init.ContinuousConvMode = DISABLE;
+  hadc2.Init.DiscontinuousConvMode = DISABLE;
+  hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc2.Init.NbrOfConversion = 1;
+  if (HAL_ADC_Init(&hadc2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_8;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC2_Init 2 */
+
+  /* USER CODE END ADC2_Init 2 */
+
+}
+
+/**
   * @brief TIM1 Initialization Function
   * @param None
   * @retval None
@@ -292,9 +583,9 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 71;
+  htim1.Init.Prescaler = 10000;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 65535;
+  htim1.Init.Period = 65000;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -392,6 +683,7 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
@@ -399,11 +691,20 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
+  htim3.Init.Prescaler = 71;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 65535;
+  htim3.Init.Period = 19999;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -430,6 +731,51 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 10000;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 65535;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
 
 }
 
@@ -467,6 +813,22 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -484,24 +846,48 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GARDEN_LIGHT_Pin|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, DHT11_Pin|GPIO_PIN_1|GPIO_PIN_4, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, DHT11_Pin|BUZZER_Pin|GPIO_PIN_4, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PC13 PC14 PC15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, AIR_CONDITIONING_Pin|HEATER_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : GARDEN_LIGHT_Pin */
+  GPIO_InitStruct.Pin = GARDEN_LIGHT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GARDEN_LIGHT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC14 PC15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : DHT11_Pin PA1 PA4 */
-  GPIO_InitStruct.Pin = DHT11_Pin|GPIO_PIN_1|GPIO_PIN_4;
+  /*Configure GPIO pins : DHT11_Pin PA4 */
+  GPIO_InitStruct.Pin = DHT11_Pin|GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : BUZZER_Pin */
+  GPIO_InitStruct.Pin = BUZZER_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(BUZZER_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : AIR_CONDITIONING_Pin HEATER_Pin */
+  GPIO_InitStruct.Pin = AIR_CONDITIONING_Pin|HEATER_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */

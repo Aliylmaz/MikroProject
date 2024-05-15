@@ -59,10 +59,26 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define GARDEN_LIGHT_Pin GPIO_PIN_13
+#define GARDEN_LIGHT_GPIO_Port GPIOC
 #define DHT11_Pin GPIO_PIN_0
 #define DHT11_GPIO_Port GPIOA
+#define BUZZER_Pin GPIO_PIN_1
+#define BUZZER_GPIO_Port GPIOA
 #define BLUE_PWM_Pin GPIO_PIN_2
 #define BLUE_PWM_GPIO_Port GPIOA
+#define PARK_SERVO_Pin GPIO_PIN_6
+#define PARK_SERVO_GPIO_Port GPIOA
+#define KAPI_SERVO_Pin GPIO_PIN_7
+#define KAPI_SERVO_GPIO_Port GPIOA
+#define SU_SENSORU_Pin GPIO_PIN_0
+#define SU_SENSORU_GPIO_Port GPIOB
+#define GAZ_SENSOR_Pin GPIO_PIN_1
+#define GAZ_SENSOR_GPIO_Port GPIOB
+#define AIR_CONDITIONING_Pin GPIO_PIN_13
+#define AIR_CONDITIONING_GPIO_Port GPIOB
+#define HEATER_Pin GPIO_PIN_14
+#define HEATER_GPIO_Port GPIOB
 #define RED_PWM_Pin GPIO_PIN_15
 #define RED_PWM_GPIO_Port GPIOA
 #define GREEN_PWM_Pin GPIO_PIN_3
