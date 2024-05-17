@@ -49,7 +49,18 @@
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 extern uint8_t getData[];
-extern uint8_t deneme;
+extern uint32_t deneme1;
+extern uint8_t BUZZER_status;
+extern uint8_t ledAlarmStatus;
+uint16_t Buzzer_Counter;
+uint16_t Led_Counter=0;
+extern uint16_t RGB_LED_red; 
+extern uint8_t RGB_LED_brightness;
+extern uint8_t DOOR_status;
+extern uint8_t PARK_status;
+uint16_t DOOR_Counter;
+uint16_t PARK_Counter;
+uint16_t PARK_OLD_CCR;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -60,6 +71,7 @@ extern uint8_t deneme;
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc1;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
 
@@ -225,12 +237,160 @@ void DMA1_Channel1_IRQHandler(void)
 void TIM1_UP_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_IRQn 0 */
-deneme++;
+
+	
+	if(BUZZER_status==1){
+		
+		if(Buzzer_Counter<20){
+			
+			HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_SET);
+			
+		}else if(Buzzer_Counter>20 && Buzzer_Counter<40){
+			
+			HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_RESET);
+
+		}else if(Buzzer_Counter>40){
+			
+			Buzzer_Counter=0;
+
+		}
+		
+		Buzzer_Counter++;
+	}else{
+		Buzzer_Counter=0;
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_RESET);
+	}
+	
+	
+	
+	if(ledAlarmStatus==1){
+		TIM2->CCR2=0;
+		TIM2->CCR3=0;
+		TIM2->CCR1=0;
+		
+		if(Led_Counter <52){
+			TIM2->CCR1=Led_Counter*5;
+			
+		}else if(Led_Counter >=52 && Led_Counter <102){
+			TIM2->CCR1=Led_Counter/5;
+			
+		}else{
+			Led_Counter=0;
+		}
+		Led_Counter++;
+	}else{
+		
+		Led_Counter=0;
+		
+	}
+	
+	
+	
+		
+		
+		
+		
+		
+		
+		
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
   /* USER CODE END TIM1_UP_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_IRQn 1 */
 
   /* USER CODE END TIM1_UP_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM4 global interrupt.
+  */
+void TIM4_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM4_IRQn 0 */
+  
+	
+	
+	if(DOOR_status==1){
+		
+		if(TIM3->CCR2 <= 1350){
+		TIM3->CCR2 = 350+DOOR_Counter;
+			
+		}
+		else{
+			
+			DOOR_Counter=0;
+		}
+		
+		DOOR_Counter++;
+		
+		
+	}
+	
+	else if(DOOR_status==0){
+		
+		if(TIM3->CCR2 >= 350){
+		TIM3->CCR2 = 1350-DOOR_Counter;
+			
+		}
+		else{
+			
+			DOOR_Counter=0;
+		}
+		
+		DOOR_Counter++;
+		
+		
+	}
+	
+	
+	if(PARK_status==1){
+		PARK_OLD_CCR= TIM3->CCR1 ;
+		if(TIM3->CCR1 <= 2350){
+		TIM3->CCR1 = PARK_OLD_CCR+PARK_Counter;
+			
+		}
+		else{
+			
+			PARK_Counter=0;
+		}
+		
+		PARK_Counter++;
+		
+		
+	}
+	
+	else if(PARK_status==0){
+		PARK_OLD_CCR= TIM3->CCR1 ;
+		if(TIM3->CCR1 >= 350){
+		TIM3->CCR1 = PARK_OLD_CCR-PARK_Counter;
+			
+		}
+		else{
+			
+			PARK_Counter=0;
+		}
+		
+		PARK_Counter++;
+		
+		
+	}
+	
+	
+  /* USER CODE END TIM4_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim4);
+  /* USER CODE BEGIN TIM4_IRQn 1 */
+
+  /* USER CODE END TIM4_IRQn 1 */
 }
 
 /**

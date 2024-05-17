@@ -36,6 +36,7 @@
 	uint8_t targetHeat=0; //T
 	uint8_t gasStatus = 0; // Z
 	uint8_t waterStatus = 0 ; // W
+	uint8_t ledAlarmStatus= 0; //X
 	float Temparature,Humidity; // C - H
 	int sendDataSatatus=0;
 	uint8_t index;
@@ -43,7 +44,7 @@
 	
 	uint8_t deneme=0;
 	char getData[30];
-	uint8_t deneme;
+	uint32_t deneme1;
 	float temparature, Humidity;
 	
 	void Read_DataDHT(void);
@@ -58,7 +59,8 @@
 	uint8_t sendValues[100];
 	uint8_t channel_2_CCR= 0;
 	uint8_t buzzer_flag;
-	uint16_t waterSensorValue=0;
+	uint32_t waterSensorValue=0;
+
 		
 	
 	
@@ -111,7 +113,6 @@ UART_HandleTypeDef huart1;
 
 
 
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -126,6 +127,7 @@ static void MX_ADC2_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
+void sendData(void);
 
 
 DHT_DataTypedef DHT11_Data;
@@ -134,6 +136,60 @@ DHT_DataTypedef DHT11_Data;
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
+
+
+
+void setWaterValues(){
+	
+	
+	if(waterSensorValue>300){
+		
+		
+		BUZZER_status=1;
+		ledAlarmStatus=1;
+	
+		
+
+	}
+	else{
+		
+		
+		BUZZER_status=0;
+		ledAlarmStatus=0;
+		
+		
+	}
+	
+	
+	
+}
+
+void setGasValues(){
+	
+	
+	if(gasValue>3000){
+		
+		
+		DOOR_status=1;
+		gasStatus=1;
+		ledAlarmStatus=1;
+		BUZZER_status=1;
+
+
+	}
+	else{
+		
+		BUZZER_status=0;
+		ledAlarmStatus=0;
+		
+		
+	}
+	
+	
+	
+}
 
 
 
@@ -283,10 +339,11 @@ void airconditioning_set(uint8_t status){
 
 void rgbControl(){
 	
+	if(ledAlarmStatus!=1){
 	TIM2->CCR1 = (uint8_t)(((uint16_t)RGB_LED_red * (uint16_t)RGB_LED_brightness) / 100) ;
 	TIM2->CCR2 = (uint8_t)(((uint16_t)RGB_LED_green * (uint16_t)RGB_LED_brightness) / 100) ;
 	TIM2->CCR3 = (uint8_t)(((uint16_t)RGB_LED_blue * (uint16_t)RGB_LED_brightness) / 100) ;
-		
+	}
 	
 }
 
@@ -294,28 +351,19 @@ void aracDondur(uint8_t yon){
 	
 	if(yon==1){
 		
-		TIM3->CCR1=2350;
+		PARK_status=1;
 	}
 	else{
-		TIM3->CCR1=350;
+		PARK_status=0;
 		
 	}
 	
 }
 
 
-void kapiAc(uint8_t yon){
-	
-	if(yon==1){
-		
-		TIM3->CCR2=1350;
-	}
-	else{
-		TIM3->CCR2=350;
-		
-	}
-	
-}
+
+
+
 
 
 void buzzerAc(uint8_t onOff){
@@ -339,7 +387,7 @@ void buzzerAc(uint8_t onOff){
   * @retval int
   */
 int main(void)
-	{
+{
 
   /* USER CODE BEGIN 1 */
 	uint8_t furkan=42;
@@ -379,7 +427,6 @@ int main(void)
 	
 
 	 HAL_TIM_Base_Start(&htim3);
-	 HAL_TIM_Base_Start(&htim4);
 	 HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_3);
 	 HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_2);
 	 HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
@@ -387,6 +434,7 @@ int main(void)
 	 HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_2);
 	 
 	 HAL_TIM_Base_Start_IT(&htim1);
+	 HAL_TIM_Base_Start_IT(&htim4);
 
 	
   /* USER CODE END 2 */
@@ -405,17 +453,17 @@ int main(void)
 			sendDataSatatus=0;
 		}
 		
+		setWaterValues();
+		//DHT_GetData(&DHT11_Data);
 		
-		DHT_GetData(&DHT11_Data);
+		//HAL_Delay(500);
 		
-		HAL_Delay(500);
+		//temparature = DHT11_Data.Temperature;
 		
-		temparature = DHT11_Data.Temperature;
-		
-		Humidity = DHT11_Data.Humidity;
+		//Humidity = DHT11_Data.Humidity;
 		
 		HAL_ADC_Start(&hadc1);
-		
+		HAL_Delay(200);
 		HAL_ADC_Start(&hadc2);
 		
 		
@@ -431,7 +479,6 @@ int main(void)
 		
 		aracDondur(PARK_status);
 		
-		kapiAc(DOOR_status);
 		
 		gardenLightControl();
 		
@@ -439,14 +486,20 @@ int main(void)
 		rgbControl();
 		
 		
-		buzzerAc(BUZZER_status);
 		
-
+		setGasValues();
 		
 		airconditioning_set(airconditioningStatus);
 		
 		heater_set(heaterStatus);
 		
+
+		
+		
+		
+		
+	
+		HAL_Delay(100);
 		
 		
 		
@@ -622,7 +675,7 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 10000;
+  htim1.Init.Prescaler = 10;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim1.Init.Period = 65000;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -792,7 +845,7 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 1000;
+  htim4.Init.Prescaler = 1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
