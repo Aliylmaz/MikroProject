@@ -40,10 +40,11 @@
 	float Temparature,Humidity; // C - H
 	int sendDataSatatus=0;
 	uint8_t index;
-	
-	
+	uint16_t DOOR_Counter;
+	uint16_t PARK_Counter;
+	uint16_t sendDataTimer=0;
 	uint8_t deneme=0;
-	char getData[30];
+	char getData[32];
 	uint32_t deneme1;
 	float temparature, Humidity;
 	
@@ -61,10 +62,13 @@
 	uint8_t buzzer_flag;
 	uint32_t waterSensorValue=0;
 
-		
+	uint32_t step_delay_door = 5;    
+	uint32_t step_delay_park = 20;    
 	
 	
-	
+	static uint32_t last_tick_door = 0;
+	static uint32_t last_tick_park = 0;
+	uint32_t current_tick;
 	
 	uint8_t tCelsius = 0;
 
@@ -141,27 +145,27 @@ DHT_DataTypedef DHT11_Data;
 
 
 
+
+
+
+
+
+
+
+
 void setWaterValues(){
 	
 	
-	if(waterSensorValue>300){
+	if(waterSensorValue>3000){
 		
 		
 		BUZZER_status=1;
 		ledAlarmStatus=1;
-	
+		waterStatus=1;
+		sendDataSatatus=1;
 		
 
 	}
-	else{
-		
-		
-		BUZZER_status=0;
-		ledAlarmStatus=0;
-		
-		
-	}
-	
 	
 	
 }
@@ -176,24 +180,68 @@ void setGasValues(){
 		gasStatus=1;
 		ledAlarmStatus=1;
 		BUZZER_status=1;
-
+		sendDataSatatus=1;
 
 	}
-	else{
-		
-		BUZZER_status=0;
-		ledAlarmStatus=0;
-		
-		
-	}
-	
 	
 	
 }
 
 
 
+void kapiParkControl(){
+	
+    current_tick = HAL_GetTick();
+ 
 
+
+    if ((current_tick - last_tick_door) >= step_delay_door || (last_tick_door > current_tick && (UINT32_MAX - last_tick_door + current_tick + 1) >= step_delay_door)) {
+        last_tick_door = current_tick;
+
+        if (DOOR_status == 1) {
+            if (TIM3->CCR2 <= 1350) {
+                TIM3->CCR2 += 5; 
+            } else {
+                DOOR_Counter = 0;
+            }
+        } else if (DOOR_status == 0) {
+            if (TIM3->CCR2 >= 300) {
+                TIM3->CCR2 -= 5; 
+            } else {
+                DOOR_Counter = 0;
+            }
+        }
+    }
+
+    if ((current_tick - last_tick_park) >= step_delay_park || (last_tick_park > current_tick && (UINT32_MAX - last_tick_park + current_tick + 1) >= step_delay_park)) {
+        last_tick_park = current_tick;
+
+        if (PARK_status == 1) {
+            if (TIM3->CCR1 <= 2350) {
+                TIM3->CCR1 += 5; 
+            } else {
+                PARK_Counter = 0;
+            }
+        } else if (PARK_status == 0) {
+            if (TIM3->CCR1 >= 350) {
+                TIM3->CCR1 -= 5; 
+            } else {
+                PARK_Counter = 0;
+            }
+        }
+    }
+		
+		
+		
+		
+	
+	
+	
+	
+	
+	
+	
+}
 
 
 
@@ -277,8 +325,6 @@ sendValues[index] = '\0';
 	
 	
 	
-	
-	
 }
 
 void sendData(){
@@ -287,36 +333,17 @@ void sendData(){
 	setSenddingData();
 	
 	HAL_UART_Transmit_IT(&huart1,(uint8_t *) &sendValues,index);
+
 	index=0;
 	
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
 }
 
 
 
 
-void heater_set(uint8_t status){
-	
-	if(status){
-		
-		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
-		
-	}else{
-		
-		HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_RESET);
-	}
-	
-	
-}
 
 
 
@@ -347,20 +374,6 @@ void rgbControl(){
 	
 }
 
-void aracDondur(uint8_t yon){
-	
-	if(yon==1){
-		
-		PARK_status=1;
-	}
-	else{
-		PARK_status=0;
-		
-	}
-	
-}
-
-
 
 
 
@@ -390,8 +403,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	uint8_t furkan=42;
-	int flag=1;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -436,7 +448,10 @@ int main(void)
 	 HAL_TIM_Base_Start_IT(&htim1);
 	 HAL_TIM_Base_Start_IT(&htim4);
 
-	
+	DHT_GetData(&DHT11_Data);
+	NVIC_SetPriority(USART1_IRQn, 1);
+	TIM3->CCR2= 350;
+	TIM3->CCR1= 350;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -446,27 +461,28 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		
 		if(sendDataSatatus){
 			
-			sendData();
-			sendDataSatatus=0;
+				sendData();
+				sendDataSatatus=0;
+			
 		}
 		
+
 		setWaterValues();
-		//DHT_GetData(&DHT11_Data);
 		
-		//HAL_Delay(500);
 		
-		//temparature = DHT11_Data.Temperature;
+
 		
-		//Humidity = DHT11_Data.Humidity;
+		temparature = DHT11_Data.Temperature;
+		
+		Humidity = DHT11_Data.Humidity;
 		
 		HAL_ADC_Start(&hadc1);
-		HAL_Delay(200);
+
 		HAL_ADC_Start(&hadc2);
 		
-		
+		kapiParkControl();
 		
 		gasValue=HAL_ADC_GetValue(&hadc1);
 		
@@ -474,10 +490,8 @@ int main(void)
 	
 		
 		
-		
 		__HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
 		
-		aracDondur(PARK_status);
 		
 		
 		gardenLightControl();
@@ -485,21 +499,20 @@ int main(void)
 		
 		rgbControl();
 		
-		
-		
+
+	
 		setGasValues();
 		
-		airconditioning_set(airconditioningStatus);
-		
-		heater_set(heaterStatus);
-		
+
+
+
 
 		
 		
 		
 		
 	
-		HAL_Delay(100);
+
 		
 		
 		
@@ -845,9 +858,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 1;
+  htim4.Init.Prescaler = 719;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 65535;
+  htim4.Init.Period = 4999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)

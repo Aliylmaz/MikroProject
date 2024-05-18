@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "dataProcessing.h"
+#include "DHT.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,10 +58,14 @@ uint16_t Led_Counter=0;
 extern uint16_t RGB_LED_red; 
 extern uint8_t RGB_LED_brightness;
 extern uint8_t DOOR_status;
+int hysteresis = 1;  
 extern uint8_t PARK_status;
-uint16_t DOOR_Counter;
-uint16_t PARK_Counter;
+uint32_t temparature_Counter;
 uint16_t PARK_OLD_CCR;
+extern DHT_DataTypedef DHT11_Data;
+extern uint8_t targetHeat;
+extern float temparature;
+extern uint16_t sendDataTimer;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -74,6 +79,34 @@ extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
+
+
+
+
+
+
+void setAirTemperature() {
+   
+
+   
+
+    if (temparature < (targetHeat - hysteresis)) {
+      
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
+    } else if (temparature > (targetHeat + hysteresis)) {
+     
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+    } else {
+       
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+    }
+}
+
+
+
 
 /* USER CODE END EV */
 
@@ -284,13 +317,20 @@ void TIM1_UP_IRQHandler(void)
 		
 	}
 	
+	if(temparature_Counter == 300){
+		DHT_GetData(&DHT11_Data);
+		temparature_Counter=0;
+		setAirTemperature();
+		
+	}
+	temparature_Counter++;
 	
-	
+
 		
 		
 		
 		
-		
+
 		
 		
 		
@@ -317,75 +357,8 @@ void TIM1_UP_IRQHandler(void)
 void TIM4_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM4_IRQn 0 */
-  
-	
-	
-	if(DOOR_status==1){
-		
-		if(TIM3->CCR2 <= 1350){
-		TIM3->CCR2 = 350+DOOR_Counter;
-			
-		}
-		else{
-			
-			DOOR_Counter=0;
-		}
-		
-		DOOR_Counter++;
-		
-		
-	}
-	
-	else if(DOOR_status==0){
-		
-		if(TIM3->CCR2 >= 350){
-		TIM3->CCR2 = 1350-DOOR_Counter;
-			
-		}
-		else{
-			
-			DOOR_Counter=0;
-		}
-		
-		DOOR_Counter++;
-		
-		
-	}
-	
-	
-	if(PARK_status==1){
-		PARK_OLD_CCR= TIM3->CCR1 ;
-		if(TIM3->CCR1 <= 2350){
-		TIM3->CCR1 = PARK_OLD_CCR+PARK_Counter;
-			
-		}
-		else{
-			
-			PARK_Counter=0;
-		}
-		
-		PARK_Counter++;
-		
-		
-	}
-	
-	else if(PARK_status==0){
-		PARK_OLD_CCR= TIM3->CCR1 ;
-		if(TIM3->CCR1 >= 350){
-		TIM3->CCR1 = PARK_OLD_CCR-PARK_Counter;
-			
-		}
-		else{
-			
-			PARK_Counter=0;
-		}
-		
-		PARK_Counter++;
-		
-		
-	}
-	
-	
+   
+
   /* USER CODE END TIM4_IRQn 0 */
   HAL_TIM_IRQHandler(&htim4);
   /* USER CODE BEGIN TIM4_IRQn 1 */
@@ -400,7 +373,7 @@ void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
 	
-	HAL_UART_Receive_IT(&huart1,(uint8_t *) &getData, 30);
+	HAL_UART_Receive_IT(&huart1,(uint8_t *) &getData, 32);
 	HAL_UART_IRQHandler(&huart1);
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
