@@ -42,14 +42,12 @@ extern int sendDataSatatus;
 
 
 
-void process_command()
-{
-    char *startMarker = strchr((char *)getData, '<');
-    char *endMarker = strchr((char *)getData, '>');
+void process_command(char *getData) {
+    char *startMarker = strchr(getData, '<');
+    char *endMarker = strchr(getData, '>');
     
     // Baslangiç ve bitis isaretlerini kontrol et
-    if (startMarker == NULL || endMarker == NULL)
-    {
+    if (startMarker == NULL || endMarker == NULL) {
         // Geçersiz veri, çik
         return;
     }
@@ -61,61 +59,52 @@ void process_command()
     // Veriyi düzelt
     int shiftAmount = 0;
     // Dizideki her karakteri kontrol et
-    for (int i = 0; i < strlen(startMarker); i++)
-    {
-        if (startMarker[i] == '<')
-        {
+    for (int i = 0; i < strlen(startMarker); i++) {
+        if (startMarker[i] == '<') {
             // '<' isareti bulundu, kaydirma miktarini belirle
             shiftAmount = i;
             break;
         }
     }
 
-    if (shiftAmount > 0 && shiftAmount < strlen(startMarker))
-    {
+    if (shiftAmount > 0 && shiftAmount < strlen(startMarker)) {
         // Diziyi kaydir
-        char temp[32];
+        char temp[128]; // Temp dizisini yeterince büyük yap
         strcpy(temp, startMarker + shiftAmount); // Kaydirilan kismi temp dizisine kopyala
         strcat(temp, startMarker); // Kalan kismi temp dizisine ekle
+        temp[strlen(startMarker)] = '\0'; // Null terminator ekle
         strcpy(startMarker, temp); // temp dizisini basa kopyala
     }
 
     // Verinin ilk karakterine göre islem yap
-    switch (startMarker[0])
-    {
+    switch (startMarker[0]) {
         case 'R':
-            if (sscanf(startMarker, "R,r=%hhu,g=%hhu,b=%hhu,B=%hhu", &RGB_LED_red, &RGB_LED_green, &RGB_LED_blue, &RGB_LED_brightness) == 4)
-            {
+            if (sscanf(startMarker, "R,r=%hhu,g=%hhu,b=%hhu,B=%hhu", &RGB_LED_red, &RGB_LED_green, &RGB_LED_blue, &RGB_LED_brightness) == 4) {
                 // Basarili sekilde okundu
             }
             break;
         case 'D':
-            if (sscanf(startMarker, "D,%hhu", &DOOR_status) == 1)
-            {
+            if (sscanf(startMarker, "D,%hhu", &DOOR_status) == 1) {
                 // Basarili sekilde okundu
             }
             break;
         case 'P':
-            if (sscanf(startMarker, "P,%hhu", &PARK_status) == 1)
-            {
+            if (sscanf(startMarker, "P,%hhu", &PARK_status) == 1) {
                 // Basarili sekilde okundu
             }
             break;
         case 'B':
-            if (sscanf(startMarker, "B,%hhu", &BUZZER_status) == 1)
-            {
+            if (sscanf(startMarker, "B,%hhu", &BUZZER_status) == 1) {
                 // Basarili sekilde okundu
             }
             break;
         case 'G':
-            if (sscanf(startMarker, "G,%hhu", &GARDEN_LIGHT_status) == 1)
-            {
+            if (sscanf(startMarker, "G,%hhu", &GARDEN_LIGHT_status) == 1) {
                 // Basarili sekilde okundu
             }
             break;
         case 'V':
-            if (sscanf(startMarker, "V,%hhu", &sendDataSatatus) == 1)
-            {
+            if (sscanf(startMarker, "V,%hhu", &sendDataSatatus) == 1) {
                 // Basarili sekilde okundu
             }
             break;
@@ -124,6 +113,7 @@ void process_command()
             break;
     }
 }
+
 
 
 
