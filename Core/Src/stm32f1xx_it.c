@@ -68,6 +68,8 @@ extern float temparature;
 extern uint16_t sendDataTimer;
 extern uint8_t heaterStatus;
 extern uint8_t airconditioningStatus;
+extern int sendDataSatatus;
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -144,6 +146,7 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
+
 
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
@@ -367,8 +370,8 @@ void TIM1_UP_IRQHandler(void)
 void TIM4_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM4_IRQn 0 */
-   sendData();
-
+   
+	sendDataSatatus=1;
   /* USER CODE END TIM4_IRQn 0 */
   HAL_TIM_IRQHandler(&htim4);
   /* USER CODE BEGIN TIM4_IRQn 1 */

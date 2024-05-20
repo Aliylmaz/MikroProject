@@ -38,18 +38,21 @@
 	uint8_t waterStatus = 0 ; // W
 	uint8_t ledAlarmStatus= 0; //X
 	float Temparature,Humidity; // C - H
-	int sendDataSatatus=0;
+	volatile int sendDataSatatus=0;
 	uint8_t index;
 	uint16_t DOOR_Counter;
 	uint16_t PARK_Counter;
 	uint16_t sendDataTimer=0;
 	uint8_t deneme=0;
+	uint8_t resetAlarm;
 	char getData[32];
 	uint32_t deneme1;
 	float temparature, Humidity;
 	
 	void Read_DataDHT(void);
 
+#define BUFFER_SIZE 256  
+#include <stdio.h>
 
 	long last= 0 ;
 	int i = 0;
@@ -57,7 +60,7 @@
 	uint16_t gasValue;
 	uint16_t doorValue = 0;
 	uint8_t channel_1_CCR= 0;
-	uint8_t sendValues[100];
+	uint8_t sendValues[50];
 	uint8_t channel_2_CCR= 0;
 	uint8_t buzzer_flag;
 	uint32_t waterSensorValue=0;
@@ -71,7 +74,7 @@
 	uint32_t current_tick;
 	
 	uint8_t tCelsius = 0;
-
+	volatile uint8_t usartTransmitComplete = 1;
 
 
 
@@ -131,8 +134,9 @@ static void MX_ADC2_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
+void setSendingData(char *buffer, size_t buffer_size);
 void sendData(void);
-
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
 
 DHT_DataTypedef DHT11_Data;
 
@@ -264,83 +268,33 @@ void gardenLightControl(){
 	
 }
 
-void appendValue(int value) {
-    if (value >= 100) {
-        sendValues[index++] = (char)(value / 100 + '0');
-        sendValues[index++] = (char)((value % 100) / 10 + '0');
-        sendValues[index++] = (char)((value % 100) % 10 + '0');
-    } else if (value >= 10) {
-        sendValues[index++] = (char)(value / 10 + '0');
-        sendValues[index++] = (char)(value % 10 + '0');
-    } else {
-        sendValues[index++] = (char)(value + '0');
+
+
+void setSendingData(char *buffer, size_t buffer_size) {
+   int index = 0;  // Yerel index degiskeni
+index += snprintf(buffer + index, buffer_size - index, 
+                  "C%d,N%d,r%hu,b%hu,B%hhu,D%hhu,P%hhu,A%hhu,G%hhu,H%hhu,I%hhu,T%hhu,Z%hhu,W%hhu*",
+                  (int)temparature, (int)Humidity, 
+                  RGB_LED_red, RGB_LED_blue, RGB_LED_brightness,
+                  DOOR_status, PARK_status, BUZZER_status, GARDEN_LIGHT_status, 
+                  heaterStatus, airconditioningStatus, targetHeat, gasStatus, waterStatus);
+
+
+    if (index >= buffer_size) {
+        // Hata isleme: buffer tasmasi durumunda
+        // Burada uygun hata yönetimi kodunu ekleyin
     }
 }
 
-void setSenddingData(){
-	
-sendValues[index++] = 'C';
-appendValue(temparature);
-sendValues[index++] = ',';
-sendValues[index++] = 'N';
-appendValue(Humidity);
-sendValues[index++] = ',';
-sendValues[index++] = 'r';
-appendValue(RGB_LED_red);
-sendValues[index++] = ',';
-sendValues[index++] = 'b';
-appendValue(RGB_LED_blue);
-sendValues[index++] = ',';
-sendValues[index++] = 'B';
-appendValue(RGB_LED_brightness);
-sendValues[index++] = ',';
-sendValues[index++] = 'D';
-appendValue(DOOR_status);
-sendValues[index++] = ',';
-sendValues[index++] = 'P';
-appendValue(PARK_status);
-sendValues[index++] = ',';
-sendValues[index++] = 'A';
-appendValue(BUZZER_status);
-sendValues[index++] = ',';
-sendValues[index++] = 'G';
-appendValue(GARDEN_LIGHT_status);
-sendValues[index++] = ',';
-sendValues[index++] = 'H';
-appendValue(heaterStatus);
-sendValues[index++] = ',';
-sendValues[index++] = 'I';
-appendValue(airconditioningStatus);
-sendValues[index++] = ',';
-sendValues[index++] = 'T';
-appendValue(targetHeat);
-sendValues[index++] = ',';
-sendValues[index++] = 'Z';
-appendValue(gasStatus);
-sendValues[index++] = ',';
-sendValues[index++] = 'W';
-appendValue(waterStatus);
-sendValues[index++] = '*';
-
-sendValues[index] = '\0';
-	
-	
-	
+void sendData() {
+    if (usartTransmitComplete) {  // Sadece önceki gönderim tamamlandiysa yeni gönderim yap
+        char sendValues[BUFFER_SIZE];  // Fonksiyon kapsaminda buffer tanimla
+        setSendingData(sendValues, BUFFER_SIZE);
+        HAL_UART_Transmit_IT(&huart1, (uint8_t *)sendValues, strlen(sendValues));
+    }
 }
 
-void sendData(){
-	
-	
-	setSenddingData();
-	
-	HAL_UART_Transmit_IT(&huart1,(uint8_t *) &sendValues,index);
 
-	index=0;
-	
-	
-	
-	
-}
 
 
 
@@ -394,6 +348,20 @@ void buzzerAc(uint8_t onOff){
 	
 	
 }
+
+void setResetAlarm(){
+	ledAlarmStatus=0;
+	BUZZER_status=0;
+	waterStatus=0;
+	gasStatus=0;
+	
+	
+	
+}
+
+
+
+
 /* USER CODE END 0 */
 
 /**
@@ -470,6 +438,13 @@ int main(void)
 			
 		}
 		
+		if(resetAlarm){
+			
+			setResetAlarm();
+			resetAlarm=0;
+			
+		}
+		
 
 		setWaterValues();
 		
@@ -489,7 +464,7 @@ int main(void)
 		gasValue=HAL_ADC_GetValue(&hadc1);
 		
 		waterSensorValue=HAL_ADC_GetValue(&hadc2);
-	
+		
 		
 		
 		__HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
@@ -508,10 +483,9 @@ int main(void)
 
 
 
+		
+		
 
-		
-		
-		
 		
 	
 
