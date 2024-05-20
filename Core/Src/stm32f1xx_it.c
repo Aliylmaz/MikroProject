@@ -66,6 +66,8 @@ extern DHT_DataTypedef DHT11_Data;
 extern uint8_t targetHeat;
 extern float temparature;
 extern uint16_t sendDataTimer;
+extern uint8_t heaterStatus;
+extern uint8_t airconditioningStatus;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -92,16 +94,24 @@ void setAirTemperature() {
 
     if (temparature < (targetHeat - hysteresis)) {
       
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
-    } else if (temparature > (targetHeat + hysteresis)) {
-     
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+				heaterStatus =1;
+				airconditioningStatus=0;
+			
+    } else if (temparature > (targetHeat + hysteresis)) {
+     
+        heaterStatus =0;
+				airconditioningStatus=1;
+			
+			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
     } else {
        
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+				heaterStatus =0;
+				airconditioningStatus=0;
     }
 }
 
@@ -357,7 +367,7 @@ void TIM1_UP_IRQHandler(void)
 void TIM4_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM4_IRQn 0 */
-   
+   sendData();
 
   /* USER CODE END TIM4_IRQn 0 */
   HAL_TIM_IRQHandler(&htim4);

@@ -162,7 +162,7 @@ void setWaterValues(){
 		BUZZER_status=1;
 		ledAlarmStatus=1;
 		waterStatus=1;
-		sendDataSatatus=1;
+
 		
 
 	}
@@ -180,7 +180,7 @@ void setGasValues(){
 		gasStatus=1;
 		ledAlarmStatus=1;
 		BUZZER_status=1;
-		sendDataSatatus=1;
+		
 
 	}
 	
@@ -320,6 +320,7 @@ appendValue(gasStatus);
 sendValues[index++] = ',';
 sendValues[index++] = 'W';
 appendValue(waterStatus);
+sendValues[index++] = '*';
 
 sendValues[index] = '\0';
 	
@@ -858,9 +859,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 719;
+  htim4.Init.Prescaler = 35999;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 4999;
+  htim4.Init.Period = 39999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)

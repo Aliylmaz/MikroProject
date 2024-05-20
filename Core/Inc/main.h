@@ -32,6 +32,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+ void sendData(void);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
