@@ -22,7 +22,6 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "dataProcessing.h"
 #include "DHT.h"
 /* USER CODE END Includes */
 
@@ -58,30 +57,43 @@ uint16_t Led_Counter=0;
 extern uint16_t RGB_LED_red; 
 extern uint8_t RGB_LED_brightness;
 extern uint8_t DOOR_status;
+extern uint8_t dhtFlag;
 int hysteresis = 1;  
 extern uint8_t PARK_status;
 uint32_t temparature_Counter;
 uint16_t PARK_OLD_CCR;
-extern DHT_DataTypedef DHT11_Data;
 extern uint8_t targetHeat;
 extern float temparature;
 extern uint16_t sendDataTimer;
 extern uint8_t heaterStatus;
 extern uint8_t airconditioningStatus;
 extern int sendDataSatatus;
+extern uint8_t processingFlag;
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void hard_fault_handler_c(uint32_t *stack_frame) {
+    uint32_t r0  = stack_frame[0];
+    uint32_t r1  = stack_frame[1];
+    uint32_t r2  = stack_frame[2];
+    uint32_t r3  = stack_frame[3];
+    uint32_t r12 = stack_frame[4];
+    uint32_t lr  = stack_frame[5];
+    uint32_t pc  = stack_frame[6];
+    uint32_t psr = stack_frame[7];
 
+    // Bu noktada, hangi register'in hataya neden oldugunu inceleyebilirsiniz
+    while (1);
+}
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc1;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim4;
-extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart3;
 /* USER CODE BEGIN EV */
 
 
@@ -146,7 +158,13 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-
+	 __asm volatile (
+        "TST lr, #4\n"
+        "ITE EQ\n"
+        "MRSEQ r0, MSP\n"
+        "MRSNE r0, PSP\n"
+        "B hard_fault_handler_c\n"
+    );
 
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
@@ -330,8 +348,8 @@ void TIM1_UP_IRQHandler(void)
 		
 	}
 	
-	if(temparature_Counter == 300){
-		DHT_GetData(&DHT11_Data);
+	if(temparature_Counter > 300){
+		dhtFlag=1;
 		temparature_Counter=0;
 		setAirTemperature();
 		
@@ -380,19 +398,18 @@ void TIM4_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles USART1 global interrupt.
+  * @brief This function handles USART3 global interrupt.
   */
-void USART1_IRQHandler(void)
+void USART3_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART1_IRQn 0 */
-	
-	HAL_UART_Receive_IT(&huart1,(uint8_t *) &getData, 32);
-	HAL_UART_IRQHandler(&huart1);
-  /* USER CODE END USART1_IRQn 0 */
-  HAL_UART_IRQHandler(&huart1);
-  /* USER CODE BEGIN USART1_IRQn 1 */
-	process_command();
-  /* USER CODE END USART1_IRQn 1 */
+  /* USER CODE BEGIN USART3_IRQn 0 */
+	HAL_UART_Receive_IT(&huart3,(uint8_t *) &getData, 32);
+	processingFlag=1;
+  /* USER CODE END USART3_IRQn 0 */
+  HAL_UART_IRQHandler(&huart3);
+  /* USER CODE BEGIN USART3_IRQn 1 */
+
+  /* USER CODE END USART3_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

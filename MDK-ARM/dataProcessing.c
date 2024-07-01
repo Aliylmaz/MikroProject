@@ -1,4 +1,3 @@
-
 #include "dataProcessing.h"
 #include "stm32f1xx_hal.h"
 #include "main.h"
@@ -18,11 +17,13 @@ extern uint8_t PARK_status; // KEY CHAR P
 extern uint8_t BUZZER_status; // KEY CHAR B
 extern uint8_t GARDEN_LIGHT_status; // KEY CHAR G
 extern char	getData[];
+
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim2;
 extern int sendDataSatatus;
 extern uint8_t targetHeat;
 extern uint8_t resetAlarm;
+
 
 /* ?RNEK GELEN DATALAR
 
@@ -139,16 +140,3 @@ void process_command()
             break;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

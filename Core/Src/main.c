@@ -36,18 +36,19 @@
 	uint8_t targetHeat=0; //T
 	uint8_t gasStatus = 0; // Z
 	uint8_t waterStatus = 0 ; // W
-	uint8_t ledAlarmStatus= 0; //X
-	float Temparature,Humidity; // C - H
+	uint8_t ledAlarmStatus= 0; //X 
 	volatile int sendDataSatatus=0;
 	uint8_t index;
 	uint16_t DOOR_Counter;
 	uint16_t PARK_Counter;
+	volatile uint8_t dhtFlag=0;
 	uint16_t sendDataTimer=0;
 	uint8_t deneme=0;
 	uint8_t resetAlarm;
 	char getData[32];
 	uint32_t deneme1;
-	float temparature, Humidity;
+	uint8_t volatile processingFlag=0;
+	float temparature, Humidity;// C - H
 	
 	void Read_DataDHT(void);
 
@@ -108,7 +109,7 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
-UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 
@@ -129,10 +130,10 @@ static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_USART1_UART_Init(void);
 static void MX_ADC2_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void setSendingData(char *buffer, size_t buffer_size);
 void sendData(void);
@@ -281,8 +282,8 @@ index += snprintf(buffer + index, buffer_size - index,
 
 
     if (index >= buffer_size) {
-        // Hata isleme: buffer tasmasi durumunda
-        // Burada uygun hata yönetimi kodunu ekleyin
+       
+			
     }
 }
 
@@ -290,7 +291,7 @@ void sendData() {
     if (usartTransmitComplete) {  // Sadece önceki gönderim tamamlandiysa yeni gönderim yap
         char sendValues[BUFFER_SIZE];  // Fonksiyon kapsaminda buffer tanimla
         setSendingData(sendValues, BUFFER_SIZE);
-        HAL_UART_Transmit_IT(&huart1, (uint8_t *)sendValues, strlen(sendValues));
+        HAL_UART_Transmit_IT(&huart3, (uint8_t *)sendValues, strlen(sendValues));
     }
 }
 
@@ -397,12 +398,12 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
-  MX_USART1_UART_Init();
   MX_ADC2_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-	__HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
+	__HAL_UART_ENABLE_IT(&huart3,UART_IT_RXNE);
 	
 	
 	
@@ -467,7 +468,7 @@ int main(void)
 		
 		
 		
-		__HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
+		
 		
 		
 		
@@ -485,9 +486,22 @@ int main(void)
 
 		
 		
-
-		
 	
+		if(processingFlag){
+			
+			process_command();
+			processingFlag=0;
+			__HAL_UART_ENABLE_IT(&huart3,UART_IT_RXNE);
+			
+		}
+		
+		
+		if(dhtFlag){
+			DHT_GetData(&DHT11_Data);
+			dhtFlag=0;
+			
+			
+		}
 
 		
 		
@@ -861,35 +875,35 @@ static void MX_TIM4_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
+  * @brief USART3 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_USART1_UART_Init(void)
+static void MX_USART3_UART_Init(void)
 {
 
-  /* USER CODE BEGIN USART1_Init 0 */
+  /* USER CODE BEGIN USART3_Init 0 */
 
-  /* USER CODE END USART1_Init 0 */
+  /* USER CODE END USART3_Init 0 */
 
-  /* USER CODE BEGIN USART1_Init 1 */
+  /* USER CODE BEGIN USART3_Init 1 */
 
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 9600;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 9600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART1_Init 2 */
+  /* USER CODE BEGIN USART3_Init 2 */
 
-  /* USER CODE END USART1_Init 2 */
+  /* USER CODE END USART3_Init 2 */
 
 }
 
